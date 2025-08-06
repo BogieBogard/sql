@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SQL Dry-Run Tool</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    textarea { width: 100%; height: 120px; margin-bottom: 20px; font-family: monospace; }
+    .output { background: #f4f4f4; padding: 10px; border: 1px solid #ccc; white-space: pre-wrap; font-family: monospace; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>SQL Dry-Run Preview Tool</h2>
+  <p>Paste your <strong>UPDATE</strong> or <strong>DELETE</strong> query:</p>
+  <textarea id="sqlInput" placeholder="e.g. UPDATE customers SET is_active = false WHERE signup_date < '2020-01-01';"></textarea>
+  <button onclick="convertSQL()">Convert to SELECT</button>
+
+  <h3>Preview:</h3>
+  <div class="output" id="preview"></div>
+
+  <script>
+    function convertSQL() {
+      const input = document.getElementById('sqlInput').value.trim();
+      const lower = input.toLowerCase();
+
+      let result = '';
+
+      try {
+        if (lower.startsWith('update')) {
+          const match = input.match(/update\s+(\w+)\s+set\s+.+?\s+where\s+(.+);?/i);
+          if (match) {
+            const table = match[1];
+            const where = match[2];
+            result = `SELECT * FROM ${table} WHERE ${where};`;
+          } else {
+            result = '❌ Could not parse UPDATE. Please include a WHERE clause.';
+          }
+        } else if (lower.startsWith('delete')) {
+          const match = input.match(/delete\s+from\s+(\w+)\s+where\s+(.+);?/i);
+          if (match) {
+            const table = match[1];
+            const where = match[2];
+            result = `SELECT * FROM ${table} WHERE ${where};`;
+          } else {
+            result = '❌ Could not parse DELETE. Please include a WHERE clause.';
+          }
+        } else {
+          result = '⚠️ Only UPDATE and DELETE statements are supported.';
+        }
+      } catch (e) {
+        console.error(e);
+        result = '❌ Error parsing SQL.';
+      }
+
+      document.getElementById('preview').innerText = result;
+    }
+  </script>
+</body>
+</html>
