@@ -2,29 +2,414 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SQL Dry-Run Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL Dry-Run Tool - Preview Your Updates & Deletes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
-    textarea { width: 100%; height: 120px; margin-bottom: 20px; font-family: monospace; }
-    .output { background: #f4f4f4; padding: 10px; border: 1px solid #ccc; white-space: pre-wrap; font-family: monospace; }
-    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    :root {
+      --primary-color: #3b82f6;
+      --primary-hover: #2563eb;
+      --secondary-color: #64748b;
+      --success-color: #10b981;
+      --error-color: #ef4444;
+      --warning-color: #f59e0b;
+      --background: #f8fafc;
+      --card-background: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border-color: #e2e8f0;
+      --border-radius: 12px;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+      color: white;
+    }
+
+    .header h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      font-weight: 300;
+    }
+
+    .main-card {
+      background: var(--card-background);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+      color: white;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .card-header h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-header p {
+      opacity: 0.9;
+      font-weight: 300;
+    }
+
+    .card-content {
+      padding: 2.5rem;
+    }
+
+    .input-section {
+      margin-bottom: 2rem;
+    }
+
+    .input-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+
+    .sql-input {
+      width: 100%;
+      min-height: 150px;
+      padding: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: var(--border-radius);
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      resize: vertical;
+    }
+
+    .sql-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      background: white;
+    }
+
+    .sql-input::placeholder {
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .convert-button {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0 auto;
+    }
+
+    .convert-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+    }
+
+    .convert-button:active {
+      transform: translateY(0);
+    }
+
+    .output-section {
+      margin-top: 2rem;
+    }
+
+    .output-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .output-label {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--secondary-color);
+      opacity: 0.5;
+    }
+
+    .status-indicator.success {
+      background: var(--success-color);
+      opacity: 1;
+    }
+
+    .status-indicator.error {
+      background: var(--error-color);
+      opacity: 1;
+    }
+
+    .status-indicator.warning {
+      background: var(--warning-color);
+      opacity: 1;
+    }
+
+    .output-container {
+      background: #1a1b26;
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+      border: 2px solid var(--border-color);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+      min-height: 120px;
+      position: relative;
+    }
+
+    .output-content {
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: #c9d1d9;
+    }
+
+    .output-content.empty {
+      color: var(--text-secondary);
+      font-style: italic;
+      opacity: 0.7;
+    }
+
+    .copy-button {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s ease;
+      font-size: 0.8rem;
+    }
+
+    .output-container:hover .copy-button {
+      opacity: 1;
+    }
+
+    .copy-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .examples {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: #f8fafc;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+    }
+
+    .examples h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .example {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .example:hover {
+      border-color: var(--primary-color);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
+
+    .example-label {
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .example-code {
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      background: #f8fafc;
+      padding: 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      color: white;
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .header p {
+        font-size: 1rem;
+      }
+
+      .card-content {
+        padding: 1.5rem;
+      }
+
+      .convert-button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* Animation for successful conversion */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .success-animation {
+      animation: pulse 0.3s ease-in-out;
+    }
   </style>
 </head>
 <body>
-  <h2>SQL Dry-Run Preview Tool</h2>
-  <p>Paste your <strong>UPDATE</strong> or <strong>DELETE</strong> query:</p>
-  <textarea id="sqlInput" placeholder="e.g. UPDATE customers SET is_active = false WHERE signup_date < '2020-01-01';"></textarea>
-  <button onclick="convertSQL()">Convert to SELECT</button>
+  <div class="container">
+    <header class="header">
+      <h1>🔍 SQL Dry-Run Tool</h1>
+      <p>Preview your UPDATE & DELETE queries before execution</p>
+    </header>
 
-  <h3>Preview:</h3>
-  <div class="output" id="preview"></div>
+    <div class="main-card">
+      <div class="card-header">
+        <h2>Convert to SELECT Query</h2>
+        <p>Transform destructive operations into safe preview queries</p>
+      </div>
+
+      <div class="card-content">
+        <div class="input-section">
+          <label class="input-label" for="sqlInput">
+            📝 Enter your UPDATE or DELETE query:
+          </label>
+          <textarea 
+            id="sqlInput" 
+            class="sql-input"
+            placeholder="UPDATE customers SET is_active = false WHERE signup_date < '2020-01-01';"
+            spellcheck="false"
+          ></textarea>
+          
+          <button class="convert-button" onclick="convertSQL()">
+            <span>⚡</span>
+            Convert to SELECT
+          </button>
+        </div>
+
+        <div class="output-section">
+          <div class="output-header">
+            <span class="output-label">📋 Preview Query:</span>
+            <div id="statusIndicator" class="status-indicator"></div>
+          </div>
+          <div class="output-container">
+            <div id="preview" class="output-content empty">Your converted SELECT query will appear here...</div>
+            <button class="copy-button" onclick="copyToClipboard()" title="Copy to clipboard">
+              📋 Copy
+            </button>
+          </div>
+        </div>
+
+        <div class="examples">
+          <h3>💡 Example Queries (click to try):</h3>
+          
+          <div class="example" onclick="loadExample(this)">
+            <div class="example-label">UPDATE Example:</div>
+            <div class="example-code">UPDATE users SET status = 'inactive' WHERE last_login < '2023-01-01';</div>
+          </div>
+          
+          <div class="example" onclick="loadExample(this)">
+            <div class="example-label">DELETE Example:</div>
+            <div class="example-code">DELETE FROM orders WHERE created_at < '2022-12-31' AND status = 'cancelled';</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <p>💡 Always preview your queries before running destructive operations</p>
+    </footer>
+  </div>
 
   <script>
     function convertSQL() {
       const input = document.getElementById('sqlInput').value.trim();
       const lower = input.toLowerCase();
+      const previewEl = document.getElementById('preview');
+      const statusIndicator = document.getElementById('statusIndicator');
 
       let result = '';
+      let status = 'success';
 
       try {
         if (lower.startsWith('update')) {
@@ -34,7 +419,8 @@
             const where = match[2];
             result = `SELECT * FROM ${table} WHERE ${where};`;
           } else {
-            result = '❌ Could not parse UPDATE. Please include a WHERE clause.';
+            result = '❌ Could not parse UPDATE query. Please ensure it includes a WHERE clause.';
+            status = 'error';
           }
         } else if (lower.startsWith('delete')) {
           const match = input.match(/delete\s+from\s+(\w+)\s+where\s+(.+);?/i);
@@ -43,18 +429,86 @@
             const where = match[2];
             result = `SELECT * FROM ${table} WHERE ${where};`;
           } else {
-            result = '❌ Could not parse DELETE. Please include a WHERE clause.';
+            result = '❌ Could not parse DELETE query. Please ensure it includes a WHERE clause.';
+            status = 'error';
           }
+        } else if (input === '') {
+          result = 'Your converted SELECT query will appear here...';
+          status = 'empty';
         } else {
-          result = '⚠️ Only UPDATE and DELETE statements are supported.';
+          result = '⚠️ Only UPDATE and DELETE statements are supported.\n\nSupported formats:\n• UPDATE table SET column = value WHERE condition;\n• DELETE FROM table WHERE condition;';
+          status = 'warning';
         }
       } catch (e) {
         console.error(e);
-        result = '❌ Error parsing SQL.';
+        result = '❌ Error parsing SQL query. Please check your syntax.';
+        status = 'error';
       }
 
-      document.getElementById('preview').innerText = result;
+      // Update the preview
+      previewEl.textContent = result;
+      previewEl.className = `output-content ${status === 'empty' ? 'empty' : ''}`;
+      
+      // Update status indicator
+      statusIndicator.className = `status-indicator ${status === 'empty' ? '' : status}`;
+      
+      // Add success animation
+      if (status === 'success') {
+        previewEl.parentElement.classList.add('success-animation');
+        setTimeout(() => {
+          previewEl.parentElement.classList.remove('success-animation');
+        }, 300);
+      }
     }
+
+    function copyToClipboard() {
+      const previewEl = document.getElementById('preview');
+      const text = previewEl.textContent;
+      
+      if (text && !text.includes('Your converted SELECT query will appear here') && !text.includes('❌') && !text.includes('⚠️')) {
+        navigator.clipboard.writeText(text).then(() => {
+          const copyButton = document.querySelector('.copy-button');
+          const originalText = copyButton.textContent;
+          copyButton.textContent = '✅ Copied!';
+          copyButton.style.background = 'rgba(16, 185, 129, 0.2)';
+          
+          setTimeout(() => {
+            copyButton.textContent = originalText;
+            copyButton.style.background = 'rgba(255, 255, 255, 0.1)';
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy: ', err);
+        });
+      }
+    }
+
+    function loadExample(element) {
+      const codeElement = element.querySelector('.example-code');
+      const exampleQuery = codeElement.textContent;
+      document.getElementById('sqlInput').value = exampleQuery;
+      convertSQL();
+      
+      // Scroll to output
+      document.querySelector('.output-section').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }
+
+    // Auto-convert on input change with debounce
+    let debounceTimer;
+    document.getElementById('sqlInput').addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(convertSQL, 500);
+    });
+
+    // Add keyboard shortcut (Ctrl/Cmd + Enter to convert)
+    document.getElementById('sqlInput').addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        convertSQL();
+      }
+    });
   </script>
 </body>
 </html>
