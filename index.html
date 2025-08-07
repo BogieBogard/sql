@@ -126,10 +126,14 @@ WHERE
       <div class="vision-section">
         <div class="vision-content">
           <h3><i class="fas fa-info-circle"></i> About This Tool</h3>
-          <p>Running a read operation before your write helps prevent mistakes. This modifies UPDATE and DELETE queries into SELECT statements using regex. Allowing you to preview the data that will be targeted.</p>
+          <p>Running a read operation before your write operation helps prevent costly mistakes. This tool automatically converts UPDATE and DELETE queries into SELECT statements using regex pattern matching, allowing you to preview exactly which data will be affected before making any changes.</p>
           
           <h3><i class="fas fa-lightbulb"></i> Future Vision</h3>
-          <p>Ideally, a utility like this would be ran by default in a SQL editor. Where if an UPDATE or DELETE statement were executed by the user, then by default the editor would run a read version of the query and count the number of records that the pototenial writer operation would be changed. And if that record count was above a configured amount then the user would get a notice before the update/delete query ran prompting them, "This query will change X number of rows. Do you wish to continue?". This would be a great way to prevent accidental data changes, and would protect engineers from themselves. In the future, I'd like to add this feature to an open source SQL editor.</p>
+          <p>Ideally, a utility like this would run by default in SQL editors.<br><br>When a user executes an UPDATE or DELETE statement, the editor would automatically run a read version of the query and count the number of records that would be affected. If that record count exceeds a configured threshold, the user would receive a warning: "This query will change X number of rows. Do you wish to continue?"<br><br>
+            
+Moving fast is great, but I don't like to break things, especially not production databases. And in the era of AI vibe coding, it's easy to move too fast. It'd be great to have more protection tools built into our various editors. 
+
+<br><br>In the future, I'd like to integrate this feature into an open-source SQL editor.</p>
         </div>
       </div>
     </div>
