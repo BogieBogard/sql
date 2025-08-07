@@ -24,59 +24,60 @@
       
     </header>
 
-    <div class="main-card">
-      <div class="card-header">
-        <h2><i class="fas fa-code-branch"></i>Convert to SELECT Query</h2>
-      </div>
-
-      <div class="card-content">
-        <div class="input-section">
-          <label class="input-label" for="sqlInput">
-            <i class="fas fa-edit"></i>
-            Enter your UPDATE or DELETE query:
-          </label>
-          <div class="sql-input-container">
-            <textarea 
-              id="sqlInput" 
-              class="sql-input"
-              placeholder="UPDATE customers SET is_active = false WHERE signup_date < '2020-01-01';"
-              spellcheck="false"
-            ></textarea>
-            <div class="input-hint">Ctrl/Cmd + Enter to convert</div>
-          </div>
-          
-          <button class="convert-button" onclick="convertSQL()">
-            <i class="fas fa-bolt"></i>
-            Convert to SELECT
-          </button>
+    <div class="content-wrapper">
+      <div class="main-card">
+        <div class="card-header">
+          <h2><i class="fas fa-code-branch"></i>Convert to SELECT Query</h2>
         </div>
 
-        <div class="output-section">
-          <div class="output-header">
-            <span class="output-label">
-              <i class="fas fa-eye"></i>
-              Preview Query:
-            </span>
-            <div id="statusIndicator" class="status-indicator"></div>
-          </div>
-          <div class="output-container">
-            <div id="preview" class="output-content empty">Your converted SELECT query will appear here...</div>
-            <button class="copy-button" onclick="copyToClipboard()" title="Copy to clipboard">
-              <i class="fas fa-copy"></i>
-              Copy
+        <div class="card-content">
+          <div class="input-section">
+            <label class="input-label" for="sqlInput">
+              <i class="fas fa-edit"></i>
+              Enter your UPDATE or DELETE query:
+            </label>
+            <div class="sql-input-container">
+              <textarea 
+                id="sqlInput" 
+                class="sql-input"
+                placeholder="UPDATE customers SET is_active = false WHERE signup_date < '2020-01-01';"
+                spellcheck="false"
+              ></textarea>
+              <div class="input-hint">Ctrl/Cmd + Enter to convert</div>
+            </div>
+            
+            <button class="convert-button" onclick="convertSQL()">
+              <i class="fas fa-bolt"></i>
+              Convert to SELECT
             </button>
           </div>
-        </div>
 
-        <div class="examples">
-          <h3><i class="fas fa-lightbulb"></i>Example Queries (click to try):</h3>
-          
-          <div class="example" onclick="loadExample(this)">
-            <div class="example-label">
-              <i class="fas fa-pen"></i>
-              Complex UPDATE Example:
+          <div class="output-section">
+            <div class="output-header">
+              <span class="output-label">
+                <i class="fas fa-eye"></i>
+                Preview Query:
+              </span>
+              <div id="statusIndicator" class="status-indicator"></div>
             </div>
-            <div class="example-code">UPDATE customer_orders 
+            <div class="output-container">
+              <div id="preview" class="output-content empty">Your converted SELECT query will appear here...</div>
+              <button class="copy-button" onclick="copyToClipboard()" title="Copy to clipboard">
+                <i class="fas fa-copy"></i>
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div class="examples">
+            <h3><i class="fas fa-lightbulb"></i>Example Queries (click to try):</h3>
+            
+            <div class="example" onclick="loadExample(this)">
+              <div class="example-label">
+                <i class="fas fa-pen"></i>
+                Complex UPDATE Example:
+              </div>
+              <div class="example-code">UPDATE customer_orders 
 SET 
     order_status = 'shipped',
     shipping_date = CURRENT_TIMESTAMP,
@@ -101,14 +102,14 @@ WHERE
         WHERE product_id = customer_orders.product_id 
         AND stock_quantity > 0
     );</div>
-          </div>
-          
-          <div class="example" onclick="loadExample(this)">
-            <div class="example-label">
-              <i class="fas fa-trash-alt"></i>
-              Complex DELETE Example:
             </div>
-            <div class="example-code">DELETE FROM user_sessions 
+            
+            <div class="example" onclick="loadExample(this)">
+              <div class="example-label">
+                <i class="fas fa-trash-alt"></i>
+                Complex DELETE Example:
+              </div>
+              <div class="example-code">DELETE FROM user_sessions 
 WHERE 
     last_activity < DATE_SUB(NOW(), INTERVAL 30 DAY)
     AND user_id NOT IN (
@@ -117,18 +118,19 @@ WHERE
         WHERE last_login > DATE_SUB(NOW(), INTERVAL 7 DAY)
     )
     AND session_type = 'temporary';</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="vision-section">
-      <div class="vision-content">
-        <h3><i class="fas fa-info-circle"></i> About This Tool</h3>
-        <p>Running a read operation before your write helps prevent mistakes. This modifies UPDATE and DELETE queries into SELECT statements using regex. Allowing you to preview the data that will be targeted.</p>
-        
-        <h3><i class="fas fa-lightbulb"></i> Future Vision</h3>
-        <p>Ideally, a utility like this would be ran by default in a SQL editor. Where if an UPDATE or DELETE statement were executed by the user, then by default the editor would run a read version of the query and count the number of records that the pototenial writer operation would be changed. And if that record count was above a configured amount then the user would get a notice before the update/delete query ran prompting them, "This query will change X number of rows. Do you wish to continue?". This would be a great way to prevent accidental data changes, and would protect engineers from themselves. In the future, I'd like to add this feature to an open source SQL editor.</p>
+      <div class="vision-section">
+        <div class="vision-content">
+          <h3><i class="fas fa-info-circle"></i> About This Tool</h3>
+          <p>Running a read operation before your write helps prevent mistakes. This modifies UPDATE and DELETE queries into SELECT statements using regex. Allowing you to preview the data that will be targeted.</p>
+          
+          <h3><i class="fas fa-lightbulb"></i> Future Vision</h3>
+          <p>Ideally, a utility like this would be ran by default in a SQL editor. Where if an UPDATE or DELETE statement were executed by the user, then by default the editor would run a read version of the query and count the number of records that the pototenial writer operation would be changed. And if that record count was above a configured amount then the user would get a notice before the update/delete query ran prompting them, "This query will change X number of rows. Do you wish to continue?". This would be a great way to prevent accidental data changes, and would protect engineers from themselves. In the future, I'd like to add this feature to an open source SQL editor.</p>
+        </div>
       </div>
     </div>
 
