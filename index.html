@@ -302,16 +302,16 @@
     }
 
     .convert-button {
-      background: var(--gradient-primary);
+      background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
       color: white;
-      border: none;
+      border: 2px solid #10b981;
       padding: 1.25rem 2.5rem;
       border-radius: var(--border-radius);
-      font-weight: 600;
+      font-weight: 700;
       font-size: 1.1rem;
       cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: var(--shadow-lg);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3), 0 4px 10px rgba(0, 0, 0, 0.2);
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -320,6 +320,7 @@
       overflow: hidden;
       min-width: 200px;
       justify-content: center;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
     .convert-button::before {
@@ -329,7 +330,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
       transition: left 0.5s ease;
     }
 
@@ -339,7 +340,9 @@
 
     .convert-button:hover {
       transform: translateY(-3px);
-      box-shadow: 0 20px 40px -10px rgba(99, 102, 241, 0.4);
+      background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
+      border-color: #34d399;
+      box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4), 0 8px 15px rgba(0, 0, 0, 0.3);
     }
 
     .convert-button:active {
@@ -620,7 +623,10 @@
       border: 1px solid var(--border-color);
       position: relative;
       z-index: 1;
-      line-height: 1.5;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-x: auto;
     }
 
     .footer {
@@ -631,6 +637,58 @@
       font-size: 1rem;
       font-weight: 400;
       animation: fadeInUp 1s ease-out 0.4s both;
+    }
+
+    .vision-section {
+      margin: 4rem 0 3rem;
+      animation: fadeInUp 1s ease-out 0.6s both;
+    }
+
+    .vision-content {
+      background: var(--background-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-lg);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .vision-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    }
+
+    .vision-content h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .vision-content h3:not(:first-child) {
+      margin-top: 2.5rem;
+    }
+
+    .vision-content h3 i {
+      color: var(--primary-light);
+      font-size: 1.2rem;
+    }
+
+    .vision-content p {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      font-weight: 400;
+      margin: 0;
     }
 
     .footer p {
@@ -698,6 +756,22 @@
       .example {
         padding: 1rem;
       }
+
+      .vision-section {
+        margin: 3rem 0 2rem;
+      }
+
+      .vision-content {
+        padding: 2rem;
+      }
+
+      .vision-content h3 {
+        font-size: 1.2rem;
+      }
+
+      .vision-content p {
+        font-size: 1rem;
+      }
     }
 
     @media (max-width: 480px) {
@@ -750,13 +824,12 @@
       </div>
       <h1><i class="fas fa-search"></i> SQL Dry-Run Tool</h1>
       <p>A simple dev tool protecting engineers from themselves</p>
-      <div class="subtitle">Running a read operation before your write helps prevent mistakes. This modifies UPDATE and DELETE queries into SELECT statements using regex. Allowing you to preview the data that will be targeted.</div>
+      
     </header>
 
     <div class="main-card">
       <div class="card-header">
         <h2><i class="fas fa-code-branch"></i>Convert to SELECT Query</h2>
-        <p>Experience the power of safe SQL transformation</p>
       </div>
 
       <div class="card-content">
@@ -804,27 +877,68 @@
           <div class="example" onclick="loadExample(this)">
             <div class="example-label">
               <i class="fas fa-pen"></i>
-              UPDATE Example:
+              Complex UPDATE Example:
             </div>
-            <div class="example-code">UPDATE users SET status = 'inactive' WHERE last_login < '2023-01-01';</div>
+            <div class="example-code">UPDATE customer_orders 
+SET 
+    order_status = 'shipped',
+    shipping_date = CURRENT_TIMESTAMP,
+    tracking_number = CONCAT('TRK-', LPAD(CAST(RAND() * 1000000 AS INT), 6, '0')),
+    last_modified = NOW(),
+    modified_by = 'system_batch_job'
+WHERE 
+    order_date >= '2023-01-01' 
+    AND order_date <= '2023-12-31'
+    AND order_status IN ('pending', 'processing')
+    AND customer_id IN (
+        SELECT customer_id 
+        FROM premium_customers 
+        WHERE subscription_active = true
+    )
+    AND total_amount > 100.00
+    AND shipping_address IS NOT NULL
+    AND (payment_status = 'paid' OR payment_method = 'credit_card')
+    AND EXISTS (
+        SELECT 1 
+        FROM inventory 
+        WHERE product_id = customer_orders.product_id 
+        AND stock_quantity > 0
+    );</div>
           </div>
           
           <div class="example" onclick="loadExample(this)">
             <div class="example-label">
               <i class="fas fa-trash-alt"></i>
-              DELETE Example:
+              Complex DELETE Example:
             </div>
-            <div class="example-code">DELETE FROM orders WHERE created_at < '2022-12-31' AND status = 'cancelled';</div>
+            <div class="example-code">DELETE FROM user_sessions 
+WHERE 
+    last_activity < DATE_SUB(NOW(), INTERVAL 30 DAY)
+    AND user_id NOT IN (
+        SELECT user_id 
+        FROM active_users 
+        WHERE last_login > DATE_SUB(NOW(), INTERVAL 7 DAY)
+    )
+    AND session_type = 'temporary';</div>
           </div>
         </div>
       </div>
     </div>
 
+    <div class="vision-section">
+      <div class="vision-content">
+        <h3><i class="fas fa-info-circle"></i> About This Tool</h3>
+        <p>Running a read operation before your write helps prevent mistakes. This modifies UPDATE and DELETE queries into SELECT statements using regex. Allowing you to preview the data that will be targeted.</p>
+        
+        <h3><i class="fas fa-lightbulb"></i> Future Vision</h3>
+        <p>Ideally, a utility like this would be ran by default in a SQL editor. Where if an UPDATE or DELETE statement were executed by the user, then by default the editor would run a read version of the query and count the number of records that the pototenial writer operation would be changed. And if that record count was above a configured amount then the user would get a notice before the update/delete query ran prompting them, "This query will change X number of rows. Do you wish to continue?". This would be a great way to prevent accidental data changes, and would protect engineers from themselves. In the future, I'd like to add this feature to an open source SQL editor.</p>
+      </div>
+    </div>
+
     <footer class="footer">
       <p>
-        <i class="fas fa-shield-alt"></i>
-        Always preview your queries before running destructive operations
-      </p>
+        <i class="fas fa-lock"></i>
+        Entries on this page are not saved       </p>
     </footer>
   </div>
 
@@ -848,20 +962,36 @@
 
         try {
           if (lower.startsWith('update')) {
-            const match = input.match(/update\s+(\w+)\s+set\s+.+?\s+where\s+(.+);?/i);
+            // Remove extra whitespace and normalize
+            const normalized = input.replace(/\s+/g, ' ').trim();
+            
+            // More robust UPDATE pattern that handles table aliases
+            const updatePattern = /UPDATE\s+(\w+(?:\.\w+)?(?:\s+\w+)?)\s+SET\s+(.+?)\s+WHERE\s+(.+?)(?:;|$)/is;
+            const match = normalized.match(updatePattern);
+            
             if (match) {
-              const table = match[1];
-              const where = match[2].replace(/;+$/, ''); // Remove any trailing semicolons
+              // Extract table name (remove alias if present)
+              const tableWithAlias = match[1].trim();
+              const table = tableWithAlias.split(/\s+/)[0]; // Take only the first word (table name)
+              const where = match[3].replace(/;+$/, '').trim(); // Remove any trailing semicolons
               result = `SELECT * FROM ${table} WHERE ${where};`;
             } else {
               result = '❌ Could not parse UPDATE query. Please ensure it includes a WHERE clause.';
               status = 'error';
             }
           } else if (lower.startsWith('delete')) {
-            const match = input.match(/delete\s+from\s+(\w+)\s+where\s+(.+);?/i);
+            // Remove extra whitespace and normalize
+            const normalized = input.replace(/\s+/g, ' ').trim();
+            
+            // More robust DELETE pattern that handles table aliases
+            const deletePattern = /DELETE\s+FROM\s+(\w+(?:\.\w+)?(?:\s+\w+)?)\s+WHERE\s+(.+?)(?:;|$)/is;
+            const match = normalized.match(deletePattern);
+            
             if (match) {
-              const table = match[1];
-              const where = match[2].replace(/;+$/, ''); // Remove any trailing semicolons
+              // Extract table name (remove alias if present)
+              const tableWithAlias = match[1].trim();
+              const table = tableWithAlias.split(/\s+/)[0]; // Take only the first word (table name)
+              const where = match[2].replace(/;+$/, '').trim(); // Remove any trailing semicolons
               result = `SELECT * FROM ${table} WHERE ${where};`;
             } else {
               result = '❌ Could not parse DELETE query. Please ensure it includes a WHERE clause.';
