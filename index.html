@@ -121,6 +121,51 @@
       margin-top: 0.5rem;
     }
 
+    .purpose-text {
+      margin-top: 2rem;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 1.5rem 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: var(--border-radius);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: var(--blur);
+      box-shadow: var(--shadow);
+    }
+
+    .purpose-text p {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 400;
+      text-align: center;
+      margin: 0;
+    }
+
+    .meme-container {
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .meme-image {
+      width: 200px;
+      height: 200px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-lg);
+      object-fit: cover;
+      border: 3px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .meme-image:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--primary-color);
+    }
+
     .main-card {
       background: var(--card-background);
       border: 1px solid var(--card-border);
@@ -608,6 +653,20 @@
         font-size: 1.1rem;
       }
 
+      .purpose-text {
+        margin-top: 1.5rem;
+        padding: 1rem 1.5rem;
+      }
+
+      .purpose-text p {
+        font-size: 1rem;
+      }
+
+      .meme-image {
+        width: 150px;
+        height: 150px;
+      }
+
       .card-content {
         padding: 2rem;
       }
@@ -646,6 +705,11 @@
         font-size: 2rem;
       }
 
+      .meme-image {
+        width: 120px;
+        height: 120px;
+      }
+
       .card-content {
         padding: 1.5rem;
       }
@@ -681,9 +745,12 @@
 <body>
   <div class="container">
     <header class="header">
+      <div class="meme-container">
+        <img src="7c6_V1.gif" alt="Shocked gorilla eating yellow bell pepper" class="meme-image" title="When you run DELETE without WHERE (1191334 rows affected)">
+      </div>
       <h1><i class="fas fa-search"></i> SQL Dry-Run Tool</h1>
-      <p>Preview your UPDATE & DELETE queries before execution</p>
-      <div class="subtitle">Transform destructive operations into safe preview queries</div>
+      <p>A simple dev tool protecting engineers from themselves</p>
+      <div class="subtitle">Running a read operation before your write helps prevent mistakes. This modifies UPDATE and DELETE queries into SELECT statements using regex. Allowing you to preview the data that will be targeted.</div>
     </header>
 
     <div class="main-card">
