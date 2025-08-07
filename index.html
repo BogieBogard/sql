@@ -19,8 +19,9 @@
       <div class="meme-container">
         <img src="7c6_V1.gif" alt="Shocked gorilla eating yellow bell pepper" class="meme-image" title="When you run DELETE without WHERE (1191334 rows affected)">
       </div>
-      <h1><i class="fas fa-search"></i> SQL Dry-Run Tool</h1>
-      <p>A simple dev tool protecting engineers from themselves</p>
+              <h1><i class="fas fa-database"></i> SQL: Read before you write</h1>
+      <p>A simple database tool protecting engineers from themselves</p>
+      <p></p>
       
     </header>
 
@@ -126,10 +127,10 @@ WHERE
       <div class="vision-section">
         <div class="vision-content">
           <h3><i class="fas fa-info-circle"></i> About This Tool</h3>
-          <p>Running a read operation before your write operation helps prevent costly mistakes. This tool automatically converts UPDATE and DELETE queries into SELECT statements using regex pattern matching, allowing you to preview exactly which data will be affected before making any changes.</p>
+          <p>Running a read operation before your write operation helps prevent costly mistakes in databases. This simple tool converts UPDATE and DELETE queries into SELECT statements using regex pattern matching, allowing you to preview exactly which data will be affected before making any changes.</p>
           
           <h3><i class="fas fa-lightbulb"></i> Future Vision</h3>
-          <p>Ideally, a utility like this would run by default in SQL editors.<br><br>When a user executes an UPDATE or DELETE statement, the editor would automatically run a read version of the query and count the number of records that would be affected. If that record count exceeds a configured threshold, the user would receive a warning: "This query will change X number of rows. Do you wish to continue?"<br><br>
+          <p>Ideally, a utility like this would run by default in SQL editors.<br><br>When a user executes an UPDATE or DELETE statement, the editor would automatically run a read version of the query under the hood and count the number of records that would be affected. If that record count exceeds a configured threshold, the user would receive a warning: "This query will change X number of rows. Do you wish to continue?"<br><br>
             
 Moving fast is great, but I don't like to break things, especially not production databases. And in the era of AI vibe coding, it's easy to move too fast. It'd be great to have more protection tools built into our various editors. 
 
