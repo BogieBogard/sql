@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Parser Test</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .test-case {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+        .input {
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .output {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
+            border-left: 3px solid #007acc;
+        }
+        .error {
+            border-left-color: #f44336;
+            color: #f44336;
+        }
+        .success {
+            border-left-color: #4caf50;
+            color: #4caf50;
+        }
+        .test-button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #005a9e;
+        }
+        h1, h2 {
+            color: #007acc;
+        }
+    </style>
+</head>
+<body>
+    <h1>SQL Parser Test Suite</h1>
+    
+    <div class="test-case">
+        <h2>Test Case 1: Simple UPDATE</h2>
+        <div class="input">UPDATE users SET status = 'inactive' WHERE last_login < '2023-01-01';</div>
+        <button class="test-button" onclick="testCase1()">Test</button>
+        <div id="result1" class="output"></div>
+    </div>
+
+    <div class="test-case">
+        <h2>Test Case 2: Complex UPDATE with Multiple SET</h2>
+        <div class="input">UPDATE customer_orders 
+SET 
+    order_status = 'shipped',
+    shipping_date = CURRENT_TIMESTAMP,
+    tracking_number = CONCAT('TRK-', LPAD(CAST(RAND() * 1000000 AS INT), 6, '0')),
+    last_modified = NOW(),
+    modified_by = 'system_batch_job'
+WHERE 
+    order_date >= '2023-01-01' 
+    AND order_date <= '2023-12-31'
+    AND order_status IN ('pending', 'processing')
+    AND customer_id IN (SELECT customer_id FROM premium_customers WHERE subscription_active = true)
+    AND total_amount > 100.00
+    AND shipping_address IS NOT NULL
+    AND (payment_status = 'paid' OR payment_method = 'credit_card')
+    AND EXISTS (
+        SELECT 1 FROM inventory 
+        WHERE product_id = customer_orders.product_id 
+        AND stock_quantity > 0
+    );</div>
+        <button class="test-button" onclick="testCase2()">Test</button>
+        <div id="result2" class="output"></div>
+    </div>
+
+    <div class="test-case">
+        <h2>Test Case 3: Simple DELETE</h2>
+        <div class="input">DELETE FROM orders WHERE created_at < '2022-12-31' AND status = 'cancelled';</div>
+        <button class="test-button" onclick="testCase3()">Test</button>
+        <div id="result3" class="output"></div>
+    </div>
+
+    <div class="test-case">
+        <h2>Test Case 4: Complex DELETE with Subqueries</h2>
+        <div class="input">DELETE FROM user_sessions 
+WHERE 
+    last_activity < DATE_SUB(NOW(), INTERVAL 30 DAY)
+    AND user_id NOT IN (
+        SELECT user_id FROM active_users 
+        WHERE last_login > DATE_SUB(NOW(), INTERVAL 7 DAY)
+    )
+    AND session_type = 'temporary';</div>
+        <button class="test-button" onclick="testCase4()">Test</button>
+        <div id="result4" class="output"></div>
+    </div>
+
+    <div class="test-case">
+        <h2>Test Case 5: UPDATE with Table Alias</h2>
+        <div class="input">UPDATE users u SET u.status = 'active' WHERE u.id IN (SELECT user_id FROM verified_accounts);</div>
+        <button class="test-button" onclick="testCase5()">Test</button>
+        <div id="result5" class="output"></div>
+    </div>
+
+    <div class="test-case">
+        <h2>Test Case 6: DELETE with JOIN-like conditions</h2>
+        <div class="input">DELETE FROM old_logs WHERE log_date < '2020-01-01' AND (severity = 'debug' OR retention_days < 30);</div>
+        <button class="test-button" onclick="testCase6()">Test</button>
+        <div id="result6" class="output"></div>
+    </div>
+
+    <div class="test-case">
+        <h2>Test Case 7: DELETE with Table Alias</h2>
+        <div class="input">DELETE FROM user_sessions us WHERE us.last_activity < '2023-01-01';</div>
+        <button class="test-button" onclick="testCase7()">Test</button>
+        <div id="result7" class="output"></div>
+    </div>
+
+    <script>
+        // Improved SQL parsing functions
+        function parseUpdateQuery(input) {
+            // Remove extra whitespace and normalize
+            const normalized = input.replace(/\s+/g, ' ').trim();
+            
+            // More robust UPDATE pattern that handles table aliases
+            const updatePattern = /UPDATE\s+(\w+(?:\.\w+)?(?:\s+\w+)?)\s+SET\s+(.+?)\s+WHERE\s+(.+?)(?:;|$)/is;
+            const match = normalized.match(updatePattern);
+            
+            if (!match) {
+                return { success: false, error: 'Could not parse UPDATE query. Please ensure it includes a WHERE clause.' };
+            }
+            
+            // Extract table name (remove alias if present)
+            const tableWithAlias = match[1].trim();
+            const table = tableWithAlias.split(/\s+/)[0]; // Take only the first word (table name)
+            const whereClause = match[3].replace(/;+$/, '').trim();
+            
+            return {
+                success: true,
+                table: table,
+                where: whereClause,
+                result: `SELECT * FROM ${table} WHERE ${whereClause};`
+            };
+        }
+
+        function parseDeleteQuery(input) {
+            // Remove extra whitespace and normalize
+            const normalized = input.replace(/\s+/g, ' ').trim();
+            
+            // More robust DELETE pattern that handles table aliases
+            const deletePattern = /DELETE\s+FROM\s+(\w+(?:\.\w+)?(?:\s+\w+)?)\s+WHERE\s+(.+?)(?:;|$)/is;
+            const match = normalized.match(deletePattern);
+            
+            if (!match) {
+                return { success: false, error: 'Could not parse DELETE query. Please ensure it includes a WHERE clause.' };
+            }
+            
+            // Extract table name (remove alias if present)
+            const tableWithAlias = match[1].trim();
+            const table = tableWithAlias.split(/\s+/)[0]; // Take only the first word (table name)
+            const whereClause = match[2].replace(/;+$/, '').trim();
+            
+            return {
+                success: true,
+                table: table,
+                where: whereClause,
+                result: `SELECT * FROM ${table} WHERE ${whereClause};`
+            };
+        }
+
+        function parseSQL(input) {
+            const lower = input.toLowerCase().trim();
+            
+            if (lower.startsWith('update')) {
+                return parseUpdateQuery(input);
+            } else if (lower.startsWith('delete')) {
+                return parseDeleteQuery(input);
+            } else {
+                return { success: false, error: 'Only UPDATE and DELETE statements are supported.' };
+            }
+        }
+
+        function displayResult(elementId, input, result) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <strong>Input:</strong><br>
+                <div class="input">${input}</div>
+                <strong>Result:</strong><br>
+                <div class="${result.success ? 'success' : 'error'}">${result.success ? result.result : result.error}</div>
+                ${result.success ? `<strong>Parsed Table:</strong> ${result.table}<br><strong>Parsed WHERE:</strong> ${result.where}` : ''}
+            `;
+        }
+
+        function testCase1() {
+            const input = `UPDATE users SET status = 'inactive' WHERE last_login < '2023-01-01';`;
+            const result = parseSQL(input);
+            displayResult('result1', input, result);
+        }
+
+        function testCase2() {
+            const input = `UPDATE customer_orders 
+SET 
+    order_status = 'shipped',
+    shipping_date = CURRENT_TIMESTAMP,
+    tracking_number = CONCAT('TRK-', LPAD(CAST(RAND() * 1000000 AS INT), 6, '0')),
+    last_modified = NOW(),
+    modified_by = 'system_batch_job'
+WHERE 
+    order_date >= '2023-01-01' 
+    AND order_date <= '2023-12-31'
+    AND order_status IN ('pending', 'processing')
+    AND customer_id IN (SELECT customer_id FROM premium_customers WHERE subscription_active = true)
+    AND total_amount > 100.00
+    AND shipping_address IS NOT NULL
+    AND (payment_status = 'paid' OR payment_method = 'credit_card')
+    AND EXISTS (
+        SELECT 1 FROM inventory 
+        WHERE product_id = customer_orders.product_id 
+        AND stock_quantity > 0
+    );`;
+            const result = parseSQL(input);
+            displayResult('result2', input, result);
+        }
+
+        function testCase3() {
+            const input = `DELETE FROM orders WHERE created_at < '2022-12-31' AND status = 'cancelled';`;
+            const result = parseSQL(input);
+            displayResult('result3', input, result);
+        }
+
+        function testCase4() {
+            const input = `DELETE FROM user_sessions 
+WHERE 
+    last_activity < DATE_SUB(NOW(), INTERVAL 30 DAY)
+    AND user_id NOT IN (
+        SELECT user_id FROM active_users 
+        WHERE last_login > DATE_SUB(NOW(), INTERVAL 7 DAY)
+    )
+    AND session_type = 'temporary';`;
+            const result = parseSQL(input);
+            displayResult('result4', input, result);
+        }
+
+        function testCase5() {
+            const input = `UPDATE users u SET u.status = 'active' WHERE u.id IN (SELECT user_id FROM verified_accounts);`;
+            const result = parseSQL(input);
+            displayResult('result5', input, result);
+        }
+
+        function testCase6() {
+            const input = `DELETE FROM old_logs WHERE log_date < '2020-01-01' AND (severity = 'debug' OR retention_days < 30);`;
+            const result = parseSQL(input);
+            displayResult('result6', input, result);
+        }
+
+        function testCase7() {
+            const input = `DELETE FROM user_sessions us WHERE us.last_activity < '2023-01-01';`;
+            const result = parseSQL(input);
+            displayResult('result7', input, result);
+        }
+
+        // Run all tests on page load
+        window.onload = function() {
+            testCase1();
+            testCase2();
+            testCase3();
+            testCase4();
+            testCase5();
+            testCase6();
+            testCase7();
+        };
+    </script>
+</body>
+</html> 
